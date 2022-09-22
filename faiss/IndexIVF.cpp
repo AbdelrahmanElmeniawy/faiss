@@ -982,7 +982,7 @@ void IndexIVF::check_compatible_for_merge(const Index& otherIndex) const {
     FAISS_THROW_IF_NOT(other.nlist == nlist);
     FAISS_THROW_IF_NOT(other.code_size == code_size);
     FAISS_THROW_IF_NOT_MSG(
-            typeid(*this) == typeid(other),
+            typeid(this) == typeid(other),
             "can only merge indexes of the same type");
     FAISS_THROW_IF_NOT_MSG(
             this->direct_map.no() && other.direct_map.no(),
