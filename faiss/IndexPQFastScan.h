@@ -57,6 +57,12 @@ struct IndexPQFastScan : IndexFastScan {
      * @param x       output vectors, size n * d
      */
     void sa_decode(idx_t n, const uint8_t* bytes, float* x) const override;
+
+    void reconstruct(idx_t key, float* recons) const override;
+
+    void reconstruct_n(idx_t i0, idx_t ni, float* recons) const override;
+
+    void read_one_code(idx_t key, const uint8_t* codes_interleaved, uint8_t* codes_contiguous) const;
 };
 
 } // namespace faiss
