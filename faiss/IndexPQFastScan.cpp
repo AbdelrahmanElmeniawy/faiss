@@ -71,4 +71,44 @@ void IndexPQFastScan::sa_decode(idx_t n, const uint8_t* bytes, float* x) const {
     pq.decode(bytes, x, n);
 }
 
+void IndexPQFastScan::reconstruct(idx_t key, float* recons) const {
+    reconstruct_n(key, 1, recons);
+}
+
+void IndexPQFastScan::reconstruct_n(idx_t i0, idx_t ni, float* recons) const {
+    FAISS_THROW_IF_NOT(ni == 0 || (i0 >= 0 && i0 + ni <= ntotal));
+    std::vector<uint8_t> codes_contiguous(ni * M);
+    for (idx_t i = i0; i < ni; i++){
+        read_one_code(i, codes.data(), codes_contiguous.data() + i * M);
+    }
+    sa_decode(ni, codes_contiguous.data(), recons);
+}
+
+void IndexPQFastScan::read_one_code(idx_t no, const uint8_t* codes_interleaved, uint8_t* codes_contiguous) const {
+    idx_t blocks = no / bbs;
+    no = no % bbs;
+    bool shift = no > 15;
+    no = no & 15;
+    idx_t index;
+    if (no < 8){
+        index = no << 1;
+    } else {
+        index = ((no - 8) << 1) + 1;
+    }
+    idx_t element_size = bbs;
+    idx_t block_size = element_size * (M / 2);
+    for (idx_t i = 0; i < M; i++){
+        idx_t index2 = index;
+        if (i & 1 == 1) index2 = index + 16;
+        idx_t col = i >> 1;
+        uint8_t ans = codes_interleaved[blocks * block_size + col * element_size + index2];
+        if (shift){
+            ans = ans >> 4;
+        } else {
+            ans = ans & 15;
+        }
+        codes_contiguous[i] = ans;
+    }
+}
+
 } // namespace faiss
