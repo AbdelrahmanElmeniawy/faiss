@@ -123,6 +123,8 @@ struct IndexFastScan : Index {
             const Scaler& scaler) const;
 
     void reconstruct(idx_t key, float* recons) const override;
+    void merge_from(Index& otherIndex, idx_t add_id = 0) override;
+    void check_compatible_for_merge(const Index& otherIndex) const override;
 };
 
 struct FastScanStats {
